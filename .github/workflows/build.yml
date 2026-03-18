@@ -33,6 +33,7 @@ jobs:
       - name: Sign APK
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/studyrival.keystore
+          mkdir -p out
           APK=$(find app/build/outputs -name "*.apk" | head -1)
           ${ANDROID_HOME}/build-tools/$(ls ${ANDROID_HOME}/build-tools | tail -1)/apksigner sign \
             --ks /tmp/studyrival.keystore \
