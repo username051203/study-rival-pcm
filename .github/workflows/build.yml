@@ -23,25 +23,27 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.0'
 
-      - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/studyrival.keystore
-
-      - name: Build Release APK
+      - name: Build unsigned APK
         run: ./gradlew assembleRelease --stacktrace
-        env:
-          KEYSTORE_PATH: studyrival.keystore
-          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASS: ${{ secrets.KEY_PASS }}
 
-      - name: Rename APK
+      - name: Find APK
+        run: find app/build/outputs -name "*.apk"
+
+      - name: Sign APK
         run: |
-          mkdir -p out
-          find app/build/outputs -name "*.apk"
-          cp $(find app/build/outputs -name "*.apk" | head -1) out/StudyRival.apk
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/studyrival.keystore
+          APK=$(find app/build/outputs -name "*.apk" | head -1)
+          ${ANDROID_HOME}/build-tools/$(ls ${ANDROID_HOME}/build-tools | tail -1)/apksigner sign \
+            --ks /tmp/studyrival.keystore \
+            --ks-pass pass:studyrival123 \
+            --key-pass pass:studyrival123 \
+            --ks-key-alias studyrival \
+            --out out/StudyRival.apk \
+            "$APK"
+
+      - name: Verify APK
+        run: ${ANDROID_HOME}/build-tools/$(ls ${ANDROID_HOME}/build-tools | tail -1)/apksigner verify --print-certs out/StudyRival.apk
 
       - name: Delete old latest release
         run: gh release delete latest --yes 2>/dev/null || true
