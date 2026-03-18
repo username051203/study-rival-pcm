@@ -30,7 +30,7 @@ jobs:
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/studyrival.keystore
 
       - name: Build Release APK
-        run: gradle assembleRelease --stacktrace
+        run: ./gradlew assembleRelease --stacktrace
         env:
           KEYSTORE_PATH: studyrival.keystore
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
