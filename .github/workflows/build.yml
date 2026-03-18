@@ -40,7 +40,8 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p out
-          cp app/build/outputs/apk/release/app-release.apk out/StudyRival.apk
+          find app/build/outputs -name "*.apk"
+          cp $(find app/build/outputs -name "*.apk" | head -1) out/StudyRival.apk
 
       - name: Delete old latest release
         run: gh release delete latest --yes 2>/dev/null || true
